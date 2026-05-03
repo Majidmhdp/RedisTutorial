@@ -12,11 +12,13 @@ namespace MyApi.Controllers
     public class ProductsController : ControllerBase
     {
         public readonly IDistributedCache _cache;
-        public readonly ProductsRepository ProductsRepository = new ProductsRepository();
+        private readonly ProductsRepository _productsRepository;
 
         public ProductsController(IDistributedCache cache)
         {
+            //, ProductsRepository productsRepository
             _cache = cache;
+            _productsRepository = new ProductsRepository();
         }
 
         [HttpGet]
@@ -29,7 +31,7 @@ namespace MyApi.Controllers
                 return Ok(JsonSerializer.Deserialize<List<Product>>(cachedData));
             }
 
-            var products = ProductsRepository.GetAllProducts();
+            var products = _productsRepository.GetAllProducts();
             var serializedProducts = System.Text.Json.JsonSerializer.Serialize(products);
             
             await _cache.SetStringAsync(cacheKey, serializedProducts, new DistributedCacheEntryOptions
